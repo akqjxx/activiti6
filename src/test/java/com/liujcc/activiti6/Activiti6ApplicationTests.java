@@ -55,6 +55,7 @@ public class Activiti6ApplicationTests {
         log.info("部署名称=[{}]", deployment.getName());
 
     }
+
     @Test
     public void taskCandidateOrAssignedDeployment() {
         Deployment deployment = processEngine.getRepositoryService()
@@ -67,6 +68,7 @@ public class Activiti6ApplicationTests {
         log.info("部署名称=[{}]", deployment.getName());
 
     }
+
     @Test
     public void createProcessInstance() {
         String processDefinitionKey = "taskCandidateOrAssigned";
@@ -102,6 +104,8 @@ public class Activiti6ApplicationTests {
                 //.taskCandidateUser(candidateUser)//组任务的办理人查询
                 //.taskAssignee("zhangsan")
                 .taskCandidateOrAssigned(candidateUser)
+                //task.getAssignee()返回值如果为null表示是组任务，
+                // 需要taskService.claim(taskid,userid);拾取任务后才能提交
                 /**排序*/
                 .orderByTaskCreateTime().asc()//使用创建时间的升序排列
                 /**返回结果集*/
