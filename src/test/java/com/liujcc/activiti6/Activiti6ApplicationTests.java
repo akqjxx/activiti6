@@ -125,4 +125,13 @@ public class Activiti6ApplicationTests {
             }
         }
     }
+
+    /**
+     * 拾取任务
+     */
+    @Test
+    public void claimTask() {
+        String taskId = "20002";
+        taskService.claim(taskId, "zhangsan");
+    }
 }
