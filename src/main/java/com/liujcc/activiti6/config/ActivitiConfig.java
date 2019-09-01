@@ -43,6 +43,9 @@ public class ActivitiConfig {
         HashMap<Object, Object> objectObjectHashMap = Maps.newHashMap();
         objectObjectHashMap.put("userService",userService);
         configuration.setBeans(objectObjectHashMap);
+        configuration.setEnableVerboseExecutionTreeLogging(true);
+        configuration.setEnableDatabaseEventLogging(true);
+        configuration.setAsyncExecutorActivate(true);
         return configuration.buildProcessEngine();
     }
 

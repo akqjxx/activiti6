@@ -18,4 +18,9 @@ public class UserServiceImpl  implements UserService {
     public List<String> getNames() {
         return Arrays.asList("zhangsan","lisi","wangwu");
     }
+
+    @Override
+    public List<String> getNames2() {
+        return Arrays.asList("A","B","C");
+    }
 }

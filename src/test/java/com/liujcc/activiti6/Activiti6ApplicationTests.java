@@ -5,6 +5,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.activiti.engine.HistoryService;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.TaskService;
+import org.activiti.engine.history.HistoricDetail;
+import org.activiti.engine.logging.LogMDC;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.task.Task;
@@ -39,8 +41,25 @@ public class Activiti6ApplicationTests {
 
     @Test
     public void delProcessDefine() {
+//          historyService
         processEngine.getRepositoryService()
                 .deleteDeployment("22501", true);
+    }
+
+    /**
+     * 多实例流程测试
+     */
+    @Test
+    public void manyInstanceTest() {
+        Deployment deployment = processEngine.getRepositoryService()
+                .createDeployment()
+                .addClasspathResource("processes/manyInstance.bpmn")
+                //.addClasspathResource("processes/processVariables.bpmn")
+                .name("manyInstance测试-" + new Date())
+                .deploy();
+        log.info("部署id=[{}]", deployment.getId());
+        log.info("部署名称=[{}]", deployment.getName());
+
     }
 
     @Test
@@ -49,7 +68,7 @@ public class Activiti6ApplicationTests {
                 .createDeployment()
                 .addClasspathResource("processes/serviceBMPN.bpmn")
                 //.addClasspathResource("processes/processVariables.bpmn")
-                .name("serviceBMPN-" + new Date())
+                .name("serviceBMPN测试-" + new Date())
                 .deploy();
         log.info("部署id=[{}]", deployment.getId());
         log.info("部署名称=[{}]", deployment.getName());
@@ -60,7 +79,8 @@ public class Activiti6ApplicationTests {
     public void taskCandidateOrAssignedDeployment() {
         Deployment deployment = processEngine.getRepositoryService()
                 .createDeployment()
-                .addClasspathResource("processes/taskCandidateOrAssigned.bpmn")
+//                .addClasspathResource("processes/taskCandidateOrAssigned.bpmn")
+                .addClasspathResource("processes/call1.bpmn")
                 //.addClasspathResource("processes/processVariables.bpmn")
                 .name("taskCandidateOrAssigned-" + new Date())
                 .deploy();
@@ -71,7 +91,8 @@ public class Activiti6ApplicationTests {
 
     @Test
     public void createProcessInstance() {
-        String processDefinitionKey = "taskCandidateOrAssigned";
+        LogMDC.setMDCEnabled(true);
+        String processDefinitionKey = "manyInstance";
         HashMap<String, Object> hashMap = Maps.newHashMap();
 //        hashMap.put("A", "AAA");
 //        hashMap.put("B", "BBB");
@@ -86,7 +107,7 @@ public class Activiti6ApplicationTests {
 
     @Test
     public void complateTask() {
-        String taskId = "17505";
+        String taskId = "62505";
         taskService.complete(taskId);
         log.info("完成任务：任务ID：[{}]", taskId);
 
@@ -131,6 +152,7 @@ public class Activiti6ApplicationTests {
      */
     @Test
     public void claimTask() {
+        taskService.createNativeTaskQuery().sql("");
         String taskId = "20002";
         taskService.claim(taskId, "zhangsan");
     }

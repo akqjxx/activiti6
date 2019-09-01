@@ -1,0 +1,9 @@
+{
+  "timeStamp": 1567351634700,
+  "processDefinitionId": "manyInstance:1:47504",
+  "processInstanceId": "50001",
+  "executionId": "50002",
+  "variableType": "integer",
+  "name": "nrOfCompletedInstances",
+  "endTime": 1567351634700
+}

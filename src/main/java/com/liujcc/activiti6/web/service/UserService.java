@@ -7,4 +7,5 @@ import java.util.List;
 public interface UserService {
     String getName(String id);
     List<String> getNames();
+    public List<String> getNames2();
 }
