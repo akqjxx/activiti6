@@ -8,4 +8,5 @@ public interface UserService {
     String getName(String id);
     List<String> getNames();
     public List<String> getNames2();
+    public String getLeader(String userName);
 }
