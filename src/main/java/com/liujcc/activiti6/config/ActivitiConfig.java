@@ -45,7 +45,7 @@ public class ActivitiConfig {
         configuration.setBeans(objectObjectHashMap);
         configuration.setEnableVerboseExecutionTreeLogging(true);
         configuration.setEnableDatabaseEventLogging(true);
-        configuration.setAsyncExecutorActivate(true);
+        //configuration.setAsyncExecutorActivate(true);
         return configuration.buildProcessEngine();
     }
 

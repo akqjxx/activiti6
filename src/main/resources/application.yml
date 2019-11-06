@@ -1,36 +1,50 @@
 spring:
   #Activiti property configuration
-#  activiti:
-#    database-schema-update: true
-#    #    job-executor-activate: true # asyncExecutorEnabled属性设置设置true后将代替那些老的Job executor
-#    history-level: full
-#    db-history-used: true
-#    check-process-definitions: false # 自动部署验证设置:true-开启（默认）、false-关闭
-#    async-executor-activate: true
-#    copy-variables-to-local-for-tasks: false
+  #  activiti:
+  #    database-schema-update: true
+  #    #    job-executor-activate: true # asyncExecutorEnabled属性设置设置true后将代替那些老的Job executor
+  #    history-level: full
+  #    db-history-used: true
+  #    check-process-definitions: false # 自动部署验证设置:true-开启（默认）、false-关闭
+  #    async-executor-activate: true
+  #    copy-variables-to-local-for-tasks: false
   datasource:
-    url: jdbc:mysql://192.168.2.120:3360/activiti6?useUnicode=true&characterEncoding=utf-8&useSSL=true&serverTimezone=UTC&nullCatalogMeansCurrent=true
-    username: root
-    password: root
-    driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
-    initialization-mode: always
     druid:
+      url: jdbc:sqlserver://124.17.32.198:1433;databaseName=dsz660;charset=cp936
+      username: sa
+      password: ETcom21CN!@#
+      #      url: jdbc:sqlserver://124.17.32.207:1433;databaseName=etcom_gdhq;charset=cp936
+      #      username: sa
+      #      password: ETcom21CN
+      driverClassName: com.microsoft.sqlserver.jdbc.SQLServerDriver
+      name: basic_sql_server
+      #连接池建立时创建的初始化连接数
       initialSize: 5
+      #连接池中最小连接数
       minIdle: 5
+      #连接池中最大连接数
       maxActive: 20
+      #获取连接时最大等待时间，单位是毫秒
       maxWait: 60000
+      #间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
       timeBetweenEvictionRunsMillis: 60000
-      minEvictableIdleTimeMillis: 300000
-      validationQuery: SELECT 1 FROM DUAL
+      #一个连接在池中最小生存的时间，单位是毫秒
+      minEvictableIdleTimeMillis: 30000
+      #用来检测连接是否有效
+      validationQuery: SELECT 1
+      #是否在连接空闲一段时间后检测其可用性，申请连接的时候检测，如果空闲时间大于timeBetweenEvictionRunsMillis，执行validationQuery检测连接是否有效
       testWhileIdle: true
+      #申请连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
       testOnBorrow: false
+      #归还连接时执行validationQuery检测连接是否有效，做了这个配置会降低性能
       testOnReturn: false
+      #是否缓存preparedStatement，也就是PSCache
       poolPreparedStatements: true
-      #    filters: stat,wall,log4j
       maxPoolPreparedStatementPerConnectionSize: 20
+      filters: stat,wall,slf4j
+      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=5000
       useGlobalDataSourceStat: true
-      connectionProperties: druid.stat.mergeSql=true;druid.stat.slowSqlMillis=500
 logging:
   level:
     com.liujcc: debug

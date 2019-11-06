@@ -9,4 +9,6 @@ public interface UserService {
     List<String> getNames();
     public List<String> getNames2();
     public String getLeader(String userName);
+
+    void delThrowEx() throws Exception;
 }
