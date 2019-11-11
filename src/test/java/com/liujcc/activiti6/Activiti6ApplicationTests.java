@@ -4,10 +4,11 @@ import com.google.common.collect.Maps;
 import com.liujcc.activiti6.web.bean.Businesswork;
 import com.liujcc.activiti6.web.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.activiti.engine.HistoryService;
-import org.activiti.engine.ProcessEngine;
-import org.activiti.engine.RuntimeService;
-import org.activiti.engine.TaskService;
+import org.activiti.bpmn.model.BpmnModel;
+import org.activiti.bpmn.model.GraphicInfo;
+import org.activiti.bpmn.model.SequenceFlow;
+import org.activiti.bpmn.model.UserTask;
+import org.activiti.engine.*;
 import org.activiti.engine.history.HistoricDetail;
 import org.activiti.engine.impl.util.IoUtil;
 import org.activiti.engine.logging.LogMDC;
@@ -21,6 +22,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.core.Conventions;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -30,10 +32,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -55,12 +54,19 @@ public class Activiti6ApplicationTests {
     @Autowired
     private UserService userService;
 
+
+    @Autowired
+    private RepositoryService repositoryService;
+
     @Test
     @Transactional
     public void delProcessDefine() throws Exception {
 //          historyService
 //        62501
 //        75001
+
+        taskService.setAssignee("2", "2");
+
 
         processEngine.getRepositoryService()
                 .deleteDeployment("25001", true);
@@ -195,8 +201,9 @@ public class Activiti6ApplicationTests {
     @Test
     public void claimTask() {
         //taskService.createNativeTaskQuery().sql("");
-        String taskId = "15005";
-        taskService.claim(taskId, "李四");
+        String taskId = "92507";
+        taskService.claim(taskId, "zhangsan");
+
     }
 
     /**
@@ -227,7 +234,119 @@ public class Activiti6ApplicationTests {
         String pdId = "businesswork:2:12504";
         InputStream processDiagram = processEngine.getRepositoryService().getProcessDiagram(pdId);
         OutputStream outputStream = new FileOutputStream("D:/businesswork.png");
-        IOUtils.copy(processDiagram,outputStream);
+        IOUtils.copy(processDiagram, outputStream);
+
+    }
+
+
+    /**
+     * 查询当前人的组任务
+     */
+    @Test
+    public void findMyComplainWork() {
+
+        Businesswork abc = new Businesswork();
+        // String name = Conventions.getVariableName(abc);
+        String candidateUser = "zhangsan";
+        List<Task> list = processEngine.getTaskService()//与正在执行的任务管理相关的Service
+                .createTaskQuery()//创建任务查询对象
+                /**查询条件（where部分）*/
+                //.taskCandidateUser(candidateUser)//组任务的办理人查询
+                //.taskAssignee("zhangsan")
+                .taskCandidateOrAssigned(candidateUser)
+                //.taskVariableValueEquals(name)
+
+                //task.getAssignee()返回值如果为null表示是组任务，
+                // 需要taskService.claim(taskid,userid);拾取任务后才能提交
+                /**排序*/
+                .orderByTaskCreateTime().asc()//使用创建时间的升序排列
+                /**返回结果集*/
+                .list();//返回列表
+        if (list != null && list.size() > 0) {
+            for (Task task : list) {
+                System.out.println("任务ID:" + task.getId());
+                System.out.println("任务名称:" + task.getName());
+                System.out.println("任务的创建时间:" + LocalDateTime.ofInstant(
+                        task.getCreateTime().toInstant(), ZoneId.systemDefault())
+                        .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+                System.out.println("任务的办理人:" + task.getAssignee());
+                System.out.println("流程实例ID：" + task.getProcessInstanceId());
+                System.out.println("执行对象ID:" + task.getExecutionId());
+                System.out.println("流程定义ID:" + task.getProcessDefinitionId());
+                System.out.println("########################################################");
+            }
+        }
+    }
+
+
+    @Test
+    public void t1() {
+        Businesswork abc = new Businesswork();
+        String name = Conventions.getVariableName(abc);
+        System.out.println(name);
+    }
+
+
+    @Test
+    public void t2() {
+
+        String taskId = "92504";
+        //返回存放连线的名称集合
+        List<String> list = new ArrayList<>();
+        //1:使用任务ID，查询任务对象
+        Task task = taskService.createTaskQuery()//
+                .taskId(taskId)//使用任务ID查询
+                .singleResult();
+
+        //获取流程定义
+        ProcessDefinition processDefinition = repositoryService.getProcessDefinition(task.getProcessDefinitionId());
+        BpmnModel bpmnModel = repositoryService.getBpmnModel(processDefinition.getId());
+
+        //可以获取当前任务坐标信息
+//        GraphicInfo graphicInfo = bpmnModel.getGraphicInfo(task.getTaskDefinitionKey());
+        org.activiti.bpmn.model.Process process = bpmnModel.getMainProcess();
+        //Process process = bpmnModel.getProcesses().get(0);
+
+        UserTask flowElement = (UserTask) process.getFlowElement(task.getTaskDefinitionKey());
+        //获取当前任务图连线 outgoing ,incoming
+        List<SequenceFlow> outgoingFlows = flowElement.getOutgoingFlows();
+        outgoingFlows.stream().forEach(flows -> {
+            System.out.println(flows.getName());
+            System.out.println(flows.getId());
+        });
+
+//        HashMap<String, Object> objectObjectHashMap = Maps.newHashMap();
+//        objectObjectHashMap.put("graphicInfo",graphicInfo);
+//        objectObjectHashMap.put("flowElement",flowElement);
+//
+
+
+    }
+
+
+    /**
+     * 个人任务转成组任务
+     */
+    @Test
+    public void t5() {
+        String taskId = "92507";
+        taskService.setAssignee(taskId, null);
+        taskService.addCandidateUser(taskId, "zhangsan");
+        taskService.addCandidateUser(taskId, "lisi");
+
+    }
+
+
+    /*
+    * 挂起
+    * */
+    @Test
+    public void t6() {
+        String taskId = "92507";
+        Task task = taskService.createTaskQuery().taskId(taskId).singleResult();
+        String processInstanceId = task.getProcessInstanceId();
+        runtimeService.suspendProcessInstanceById(processInstanceId);
+
 
     }
 }
